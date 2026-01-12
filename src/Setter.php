@@ -16,6 +16,10 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
    */
   protected array $_allowedOptions = [
   ];
+  
+  private array $commands = [];
+  
+  private array $markers = [];
 
   function setValue($value) {
     $this->setup['value'] = $value;
@@ -32,6 +36,44 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
     return $this;
   }
 
+  function resetMarkers() {
+    $this->markers = [];
+    return $this;
+  }
+
+  function resetCommands() {
+    $this->commands = [];
+    return $this;
+  }
+
+  function addMarker(float $x, float $y, string $text) {
+    $cmd = [
+      'pos' => [$x,$y],
+      'txt' => $text,
+    ];
+    $this->markers[] = $cmd;
+    return $this;
+  }
+
+  function setPopup(float $x, float $y, string $text) {
+    $cmd = [
+      'pos' => [$x,$y],
+      'txt' => $text,
+    ];
+    $this->commands['popup'] = $cmd;
+    return $this;
+  }
+    
+  function setView(float $x, float $y, int $z) {
+    $cmd = [
+      'x' => $x,
+      'y' => $y,
+      'z' => $z,
+    ];
+    $this->commands['view'] = $cmd;
+    return $this;
+  }
+
   /**
   * value
   *
@@ -40,6 +82,14 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
   */
   public function value(mixed $value = ''): array {
     $a = [];
+    if (!empty($this->markers)) {
+      $this->commands['markers'] = $this->markers;
+      $this->resetMarkers();
+    }
+    if (!empty($this->commands)) {
+      $a = $this->commands;
+      $this->resetCommands();
+    };
     $b = $this->getArrayOfAllowedOptions();
     if (!empty($b)) {
       $a['config'] = $b;
