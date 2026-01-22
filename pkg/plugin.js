@@ -10,6 +10,26 @@
         inited = false
         ;
 
+    let allowedPopupParams = {
+        'pane':'string',
+        'offset':'point',
+        'maxWidth':'number',
+        'minWidth':'number',
+        'maxHeight':'number',
+        'autoPan':'boolean',
+        'autoPanPaddingTopLeft':'point',
+        'autoPanPaddingBottomRight':'point',
+        'autoPanPadding':'point',
+        'keepInView':'boolean',
+        'closeButton':'boolean',
+        'autoClose':'boolean',
+        'closeOnEscapeKey':'boolean',
+        'closeOnClick':'boolean',
+        'className':'string',
+        'interactive':'boolean',
+        'content':'string'
+        };
+
     function Instance(pluggable,element,dd){
       var that = this;
       this.pluggable = pluggable;
@@ -229,8 +249,14 @@
       },
 
       this._popup = function(p) {
+        var o = {};
 
-        var popup = new L.Popup();
+        for (var x in allowedPopupParams) {
+          if (typeof p[x] == allowedPopupParams[x]) {
+            o[x] = p[x];
+          };
+        };
+        var popup = new L.Popup(o);
         if (typeof p.pos == 'object') {
           popup.setLatLng(p.pos);//[51.5, -0.09]
         };
@@ -298,8 +324,8 @@
         o.x = ll.lng;
         o.y = ll.lat;
         o.z = that.map.getZoom();
-        var s = '['+o.x+':'+o.y+':'+o.z+']';
-        //console.log('KVIK',s, that.map.getBounds());
+        var s = '['+o.y+':'+o.x+':'+o.z+']';
+        console.log('LEAFLET',s, that.map.getBounds());
 
       },
 
@@ -328,8 +354,47 @@
         $(that.element).html('');
 
         if (typeof that.dd.icon == 'string') this._addIcon('default', that.dd.icon);
+        
+        let view = [51.505, -0.09];let zoom = 13;let popup = null;
+        if (typeof that.dd.view == 'string') {
+           view = that.dd.view.split(':');
+           if ((typeof view == 'object')&&(view.length == 2)) {
+             view[0] = parseFloat(view[0]);
+             view[1] = parseFloat(view[1]);
+           }
+           if ((typeof view == 'object')&&(view.length == 3)) {
+             view[0] = parseFloat(view[0]);
+             view[1] = parseFloat(view[1]);
+             zoom = parseInt(view[2]);
+             delete view[2];
+           }
+        };
+        if ((typeof that.dd.zoom == 'string')||(typeof that.dd.zoom == 'number')) {
+           zoom = parseInt(that.dd.zoom);
+        };
+        if (typeof that.dd.popup == 'string') {
+           popup = that.dd.popup.split(':');
+        };
+        console.log(typeof that.dd.popup);
+        that.map = new L.Map(that.element).setView(view, zoom);
+        
+        if ((typeof popup == 'object')&&(popup.length == 2)) {
+          let o = {
+            pos:[parseFloat(popup[0]), parseFloat(popup[1])]
+          };
+          for (var x in allowedPopupParams) {
+            var xx = x.toLowerCase();
+            console.log('popup_'+xx);
+            if (typeof that.dd['popup_'+xx] == allowedPopupParams[x]) {
+              o[x] = that.dd['popup_'+xx];
+            };
+          };
+          console.log(that.dd);
 
-        that.map = new L.Map(that.element).setView([51.505, -0.09], 13);
+          console.log('POPUP', o);
+          that._popup(o);
+        }
+        
         //that._addButton();
 
         //var marker = L.marker([51.5, -0.09]).addTo(that.map);

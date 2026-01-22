@@ -2,7 +2,14 @@
 namespace Waxedphp\Leaflet;
 
 class Cache {
-
+  
+  private string $writablePath = '';
+  
+  public function setWritablePath(string $dir) {
+    if (!is_dir($dir)) throw new Exception('Writable path not found.');
+    $this->writablePath = $dir;
+    return $this;
+  }
 
   /**
   * value
@@ -12,7 +19,10 @@ class Cache {
   */
   public function value(int $x, int $y, int $z, string $r = 'osma'): array {
 
-    $ttl = 86400 * 7; //cache timeout in seconds
+    if ((!$this->writablePath)||(!is_dir($dir))) {
+      throw new Exception('Writable path not found.');
+    };
+    $ttl = 86400; //cache timeout in seconds, one day
     
     /*
     $x = intval($_GET['x']);
@@ -32,7 +42,9 @@ class Cache {
         break;
     }
 
-    $file = "tiles/$r/${z}_${x}_$y.png";
+    $path = $this->writablePath . '/' . $z;
+    if (!is_dir($path)) mkdir($path);
+    $file = $path . '/' . $x . '_' . $y . '.png';
     if (!is_file($file) || filemtime($file)<time()-(86400*30))
     {
       $server = array();
