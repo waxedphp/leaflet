@@ -8,7 +8,7 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
    */
   private array $setup = [
   ];
-  
+
   /**
    * allowed options
    *
@@ -16,9 +16,9 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
    */
   protected array $_allowedOptions = [
   ];
-  
+
   private array $commands = [];
-  
+
   private array $markers = [];
 
   function setValue($value) {
@@ -55,7 +55,7 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
     return $this;
   }
 
-  function setPopup(float $x, float $y, string $text, arra $params = []) {
+  function setPopup(float $x, float $y, string $text, array $params = []) {
     $cmd = [
       'pos' => [$x,$y],
       'txt' => $text,
@@ -85,7 +85,7 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
     $this->commands['popup'] = $cmd;
     return $this;
   }
-    
+
   function setView(float $x, float $y, int $z) {
     $cmd = [
       'x' => $x,
@@ -119,7 +119,7 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
     $a['value'] = $value;
     return $a;
   }
-  
+
   protected function is_type(string $type, $value) {
     switch(strtolower($type)) {
       case 'boolean': return is_bool($value); break;
@@ -136,7 +136,7 @@ class Setter extends \Waxedphp\Waxedphp\Php\Setters\AbstractSetter {
           &&(count($value)==2)
           &&(is_float($value[0]))
           &&(is_float($value[2]))
-        ); 
+        );
       break;
     }
     return false;

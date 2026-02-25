@@ -45,6 +45,7 @@
       this.layerGroups = {};
       this.cfg = {
       };
+      this.interactive = true;
 
       this.invalidate = function(RECORD){
 
@@ -93,7 +94,7 @@
             this.layerGroups[rec.markerPopup.group].eachLayer((layer) => {
               if (layer instanceof L.Marker) {
                 if(layer.options.point_id == rec.markerPopup.point) {
-                  console.log('yes',layer.options.point_id,layer.options.popup);
+                  //console.log('yes',layer.options.point_id,layer.options.popup);
 
                 }
 
@@ -148,6 +149,33 @@
 
       this.free = function() {
 
+      },
+
+      this.disableInteraction = function() {
+        if (!this.interactive) return;
+        //console.log('DISABLING!!!', that.map);
+        that.map.dragging.disable();
+        that.map.touchZoom.disable();
+        that.map.doubleClickZoom.disable();
+        that.map.scrollWheelZoom.disable();
+        that.map.boxZoom.disable();
+        that.map.keyboard.disable();
+        if (that.map.tap) that.map.tap.disable();
+        $(that.element).css('cursor', 'default');
+        this.interactive = false;
+      },
+
+      this.enableInteraction = function() {
+        if (this.interactive) return;
+        that.map.dragging.enable();
+        that.map.touchZoom.enable();
+        that.map.doubleClickZoom.enable();
+        that.map.scrollWheelZoom.enable();
+        that.map.boxZoom.enable();
+        that.map.keyboard.enable();
+        if (that.map.tap) that.map.tap.enable();
+        $(that.element).css('cursor', 'grab');
+        this.interactive = true;
       },
 
       this._tileLayer = function() {
@@ -272,7 +300,7 @@
         if ((typeof o.x == 'number') && (typeof o.y == 'number') && (typeof o.z == 'number')) {
           that.map.setView([o.x, o.y], o.z);
           return;
-          
+
         };
 
         if ((typeof o.x == 'number') && (typeof o.y == 'number')) {
@@ -325,14 +353,14 @@
         o.y = ll.lat;
         o.z = that.map.getZoom();
         var s = '['+o.y+':'+o.x+':'+o.z+']';
-        console.log('LEAFLET',s, that.map.getBounds());
+        //console.log('LEAFLET',s, that.map.getBounds());
 
       },
 
 
       this._ondblclick = function(ev) {
 
-        console.log('DBL',ev.latlng, that.map.getBounds());
+        //console.log('DBL',ev.latlng, that.map.getBounds());
           that.pluggable.sendData({
             lat:ev.latlng.lat,
             lon:ev.latlng.lng,
@@ -354,7 +382,7 @@
         $(that.element).html('');
 
         if (typeof that.dd.icon == 'string') this._addIcon('default', that.dd.icon);
-        
+
         let view = [51.505, -0.09];let zoom = 13;let popup = null;
         if (typeof that.dd.view == 'string') {
            view = that.dd.view.split(':');
@@ -375,26 +403,26 @@
         if (typeof that.dd.popup == 'string') {
            popup = that.dd.popup.split(':');
         };
-        console.log(typeof that.dd.popup);
+        //console.log(typeof that.dd.popup);
         that.map = new L.Map(that.element).setView(view, zoom);
-        
-        if ((typeof popup == 'object')&&(popup.length == 2)) {
+
+        if ((popup) && (typeof popup == 'object')&&(popup.length == 2)) {
           let o = {
             pos:[parseFloat(popup[0]), parseFloat(popup[1])]
           };
           for (var x in allowedPopupParams) {
             var xx = x.toLowerCase();
-            console.log('popup_'+xx);
+            //console.log('popup_'+xx);
             if (typeof that.dd['popup_'+xx] == allowedPopupParams[x]) {
               o[x] = that.dd['popup_'+xx];
             };
           };
-          console.log(that.dd);
+          //console.log(that.dd);
 
-          console.log('POPUP', o);
+          //console.log('POPUP', o);
           that._popup(o);
         }
-        
+
         //that._addButton();
 
         //var marker = L.marker([51.5, -0.09]).addTo(that.map);
@@ -407,6 +435,20 @@
         that.map.on('moveend', that._onchange);
         that.map.on('zoomend', that._onchange);
         that.map.on('dblclick', that._ondblclick);
+
+        this.disableInteraction();
+        that.map.on('click', function(e) {
+          that.enableInteraction();
+        });
+
+        $(that.element).on('mouseout', function(e) {
+          //console.log('out');
+          //that.disableInteraction();
+        });
+
+        $(window).scroll(function() {
+           that.disableInteraction();
+        });
 
         inited = true;
       },
